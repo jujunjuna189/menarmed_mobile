@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "951151642209",
+    "firebase_url": "https://menarmed-708d2-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "menarmed-708d2",
+    "storage_bucket": "menarmed-708d2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:951151642209:android:cf3e0074dd03b328ea0c20",
+        "android_client_info": {
+          "package_name": "com.hplbz.menarmedmobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "951151642209-739u9d9cajbvg36mpgop1aghrkortf1i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZoznBGJVTuOXkStmugX8s3U5EzKMxM8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "951151642209-739u9d9cajbvg36mpgop1aghrkortf1i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
