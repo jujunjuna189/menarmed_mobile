@@ -50,4 +50,5 @@ class Api {
   static const reportLogistik = '${server}api/report/logistik';
   // Feature
   static const ftDashboardSlider = '${server}api/feature/slider/show';
+  static const ftDashboardTextMarquee = '${server}api/feature/marquee/show';
 }

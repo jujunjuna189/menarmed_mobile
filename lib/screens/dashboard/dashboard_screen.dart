@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:marquee/marquee.dart';
 import 'package:menarmed_mobile/repository/auth_repo.dart';
 import 'package:menarmed_mobile/repository/feature_repo.dart';
 import 'package:menarmed_mobile/utils/colors.dart';
@@ -13,6 +14,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  String _textMarquee = "Selamat Datang Di Aplikasi Menarmed";
   List _dashboardSlider = [];
 
   @override
@@ -22,8 +24,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void getFirstData() async {
+    await getTextMarque();
     await getSlider();
     setState(() {});
+  }
+
+  Future getTextMarque() async {
+    await FeatureRepo.instance.dashboardTextMarquee({}).then((value) {
+      _textMarquee = value[0]['text'];
+    });
   }
 
   Future getSlider() async {
@@ -46,10 +55,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      shrinkWrap: true,
       physics: const ScrollPhysics(),
       children: [
-        const SizedBox(
-          height: 25,
+        Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          decoration: const BoxDecoration(
+            color: bgLightTransparent,
+          ),
+          child: SizedBox(
+            height: 40.0,
+            child: Marquee(
+              text: " $_textMarquee",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+              scrollAxis: Axis.horizontal,
+            ),
+          ),
         ),
         _dashboardSlider.isNotEmpty
             ? CarouselSlider(
@@ -78,7 +99,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               )
             : Container(),
         const SizedBox(
-          height: 25,
+          height: 5,
+        ),
+        const SizedBox(
+          height: 5,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),

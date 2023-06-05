@@ -51,6 +51,7 @@ dependencies:
   flutter_background_service: ^2.4.3 # For background service not terminate
   webview_flutter: ^3.0.4 #For web view article
   url_launcher: ^6.1.10 #For link to browser
+  marquee: ^2.2.3 #For text running
 
 dev_dependencies:
   flutter_test:
