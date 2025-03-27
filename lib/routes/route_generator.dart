@@ -28,6 +28,7 @@ import 'package:menarmed_mobile/screens/report/report_vehicle_van_permission_scr
 import 'package:menarmed_mobile/screens/scan_qr/scan_screen.dart';
 import 'package:menarmed_mobile/screens/splash/splash_screen.dart';
 import 'package:menarmed_mobile/screens/staff/staff_screen.dart';
+import 'package:menarmed_mobile/screens/suggestion/suggestion_screen.dart';
 
 class RouteGenerator {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -55,7 +56,10 @@ class RouteGenerator {
         }
         return _errorRoute();
       case '/home':
-        return MaterialPageRoute(builder: (_) => const HomeScreen(title: "Home",));
+        return MaterialPageRoute(
+            builder: (_) => const HomeScreen(
+                  title: "Home",
+                ));
       case '/scan_qr':
         return MaterialPageRoute(builder: (_) => const ScanScreen());
       case '/detail_kostrad':
@@ -130,6 +134,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const AbilityDataScreen());
       case '/staff':
         return MaterialPageRoute(builder: (_) => const StaffScreen());
+      case '/suggestion':
+        return MaterialPageRoute(builder: (_) => const SuggestionScreen());
       case '/report_presence':
         return MaterialPageRoute(builder: (_) => const ReportPresenceScreen());
       case '/report_permission':
@@ -143,7 +149,7 @@ class RouteGenerator {
       case '/report_logistics':
         return MaterialPageRoute(builder: (_) => const ReportLogisticsScreen());
       default:
-      // If there is no such named route in the switch statement, e.g. /third
+        // If there is no such named route in the switch statement, e.g. /third
         return _errorRoute();
     }
   }

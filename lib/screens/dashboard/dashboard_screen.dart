@@ -46,8 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (value['role'] == 1 || value['role'] == '1') {
         Navigator.of(context).pushNamed("/alarm");
       } else {
-        ToastAlert.instance.showMessage(
-            customMessage: true, customMessageText: "Hanya yang berwenang");
+        ToastAlert.instance.showMessage(customMessage: true, customMessageText: "Hanya yang berwenang");
       }
     });
   }
@@ -109,11 +108,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-                decoration: BoxDecoration(
-                    color: bgLightTransparent,
-                    borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                decoration: BoxDecoration(color: bgLightTransparent, borderRadius: BorderRadius.circular(10)),
                 child: Column(
                   children: [
                     Row(
@@ -125,27 +121,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Navigator.of(context).pushNamed("/presence");
                             }),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 15),
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                               decoration: BoxDecoration(
                                 color: bgWhite,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Column(
                                 children: [
-                                  SizedBox(
-                                      width: 40,
-                                      height: 40,
-                                      child: Image.asset(
-                                          "assets/images/icon/note.png")),
+                                  SizedBox(width: 40, height: 40, child: Image.asset("assets/images/icon/note.png")),
                                   const SizedBox(
                                     height: 5,
                                   ),
                                   const Text(
                                     "Absensi",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const Text(
                                     "Keterangan Personil",
@@ -166,27 +155,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Navigator.of(context).pushNamed("/permission");
                             }),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 15),
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                               decoration: BoxDecoration(
                                 color: bgWhite,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Column(
                                 children: [
-                                  SizedBox(
-                                      width: 40,
-                                      height: 40,
-                                      child: Image.asset(
-                                          "assets/images/icon/soldier.png")),
+                                  SizedBox(width: 40, height: 40, child: Image.asset("assets/images/icon/soldier.png")),
                                   const SizedBox(
                                     height: 5,
                                   ),
                                   const Text(
                                     "Perizinan",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const Text(
                                     "Keluar Masuk Ksatrian",
@@ -212,27 +194,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               alarmNavigation();
                             }),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 15),
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                               decoration: BoxDecoration(
                                 color: bgWhite,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Column(
                                 children: [
-                                  SizedBox(
-                                      width: 40,
-                                      height: 40,
-                                      child: Image.asset(
-                                          "assets/images/icon/alarm.png")),
+                                  SizedBox(width: 40, height: 40, child: Image.asset("assets/images/icon/alarm.png")),
                                   const SizedBox(
                                     height: 5,
                                   ),
                                   const Text(
                                     "Alarm Stelling",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const Text(
                                     "Sirine Kesiapsiagaan",
@@ -253,8 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Navigator.of(context).pushNamed("/armory");
                             }),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 15),
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                               decoration: BoxDecoration(
                                 color: bgWhite,
                                 borderRadius: BorderRadius.circular(8),
@@ -262,18 +236,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Column(
                                 children: [
                                   SizedBox(
-                                      width: 40,
-                                      height: 40,
-                                      child: Image.asset(
-                                          "assets/images/icon/barracks.png")),
+                                      width: 40, height: 40, child: Image.asset("assets/images/icon/barracks.png")),
                                   const SizedBox(
                                     height: 5,
                                   ),
                                   const Text(
                                     "Gudang Senjata",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const Text(
                                     "Keluar Masuk Senjata",
@@ -296,12 +265,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Expanded(
                           child: GestureDetector(
                             onTap: (() {
-                              Navigator.of(context)
-                                  .pushNamed("/vehicle_van_permission");
+                              Navigator.of(context).pushNamed("/vehicle_van_permission");
                             }),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 15),
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                               decoration: BoxDecoration(
                                 color: bgWhite,
                                 borderRadius: BorderRadius.circular(8),
@@ -309,18 +276,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Column(
                                 children: [
                                   SizedBox(
-                                      width: 40,
-                                      height: 40,
-                                      child: Image.asset(
-                                          "assets/images/icon/armored-van.png")),
+                                      width: 40, height: 40, child: Image.asset("assets/images/icon/armored-van.png")),
                                   const SizedBox(
                                     height: 5,
                                   ),
                                   const Text(
                                     "Ranpur",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const Text(
                                     "Keluar Masuk Kendaraan Tempur",
@@ -338,12 +300,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Expanded(
                           child: GestureDetector(
                             onTap: (() {
-                              Navigator.of(context)
-                                  .pushNamed("/vehicle_permission");
+                              Navigator.of(context).pushNamed("/vehicle_permission");
                             }),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 15),
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                               decoration: BoxDecoration(
                                 color: bgWhite,
                                 borderRadius: BorderRadius.circular(8),
@@ -353,16 +313,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   SizedBox(
                                       width: 40,
                                       height: 40,
-                                      child: Image.asset(
-                                          "assets/images/icon/armored-vehicle.png")),
+                                      child: Image.asset("assets/images/icon/armored-vehicle.png")),
                                   const SizedBox(
                                     height: 5,
                                   ),
                                   const Text(
                                     "Angkutan",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const Text(
                                     "Keluar Masuk Angkutan",
@@ -388,8 +345,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Navigator.of(context).pushNamed("/logistics");
                             }),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 15),
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                               decoration: BoxDecoration(
                                 color: bgWhite,
                                 borderRadius: BorderRadius.circular(8),
@@ -397,18 +353,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Column(
                                 children: [
                                   SizedBox(
-                                      width: 40,
-                                      height: 40,
-                                      child: Image.asset(
-                                          "assets/images/icon/backpack.png")),
+                                      width: 40, height: 40, child: Image.asset("assets/images/icon/backpack.png")),
                                   const SizedBox(
                                     height: 5,
                                   ),
                                   const Text(
                                     "Logistik",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const Text(
                                     "Pembagian Kaporlap",
@@ -429,27 +380,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Navigator.of(context).pushNamed("/ability_data");
                             }),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 15),
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                               decoration: BoxDecoration(
                                 color: bgWhite,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Column(
                                 children: [
-                                  SizedBox(
-                                      width: 40,
-                                      height: 40,
-                                      child: Image.asset(
-                                          "assets/images/icon/army.png")),
+                                  SizedBox(width: 40, height: 40, child: Image.asset("assets/images/icon/army.png")),
                                   const SizedBox(
                                     height: 5,
                                   ),
                                   const Text(
                                     "Kemampuan",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const Text(
                                     "Data Kemampuan Personil",
@@ -475,8 +419,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Navigator.of(context).pushNamed("/staff");
                             }),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 15, horizontal: 15),
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                               decoration: BoxDecoration(
                                 color: bgWhite,
                                 borderRadius: BorderRadius.circular(8),
@@ -486,16 +429,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   SizedBox(
                                       width: 40,
                                       height: 40,
-                                      child: Image.asset(
-                                          "assets/images/icon/identification-card.png")),
+                                      child: Image.asset("assets/images/icon/identification-card.png")),
                                   const SizedBox(
                                     height: 5,
                                   ),
                                   const Text(
                                     "Staff",
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
                                   const Text(
                                     "Data Staff",
@@ -507,6 +447,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: (() {
+                              Navigator.of(context).pushNamed("/suggestion");
+                            }),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                              decoration: BoxDecoration(
+                                color: bgWhite,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                      width: 40, height: 40, child: Image.asset("assets/images/icon/letterbox.png")),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  const Text(
+                                    "Saran & Masukan",
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  ),
+                                  const Text(
+                                    "Kirim Saran dan Masukan",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
                       ],
                     ),
                   ],

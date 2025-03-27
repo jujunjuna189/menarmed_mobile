@@ -1,7 +1,7 @@
 class Api {
   // static const server = 'http://10.0.2.2:8000/';
-  // static const server = 'http://192.168.1.3:8000/';
-  static const server = 'https://menarmed.hplbz18.com/';
+  static const server = 'http://192.168.1.10:8000/';
+  // static const server = 'https://menarmed.hplbz18.com/';
   //Auth
   static const login = '${server}api/login';
   static const register = '${server}api/register';
@@ -41,6 +41,9 @@ class Api {
   static const kostradShow = '${server}api/kostrad/show';
   //Calendar
   static const calendarShow = '${server}api/event/show';
+  // Suggestion
+  static const suggestion = '${server}api/saran/store';
+  static const reportSuggestion = '${server}api/report/saran';
   //Report
   static const reportAbsensi = '${server}api/report/absensi';
   static const reportPerizinan = '${server}api/report/perizinan';
