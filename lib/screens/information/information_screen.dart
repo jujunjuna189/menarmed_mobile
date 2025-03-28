@@ -36,8 +36,7 @@ class _InformationScreenState extends State<InformationScreen> {
     if (_user['role'] == 1 || _user['role'] == '1') {
       Navigator.of(context).pushNamed(routeName);
     } else {
-      ToastAlert.instance.showMessage(
-          customMessage: true, customMessageText: "Hanya yang berwenang");
+      ToastAlert.instance.showMessage(customMessage: true, customMessageText: "Hanya yang berwenang");
     }
   }
 
@@ -49,8 +48,7 @@ class _InformationScreenState extends State<InformationScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
           child: Container(
-            padding:
-                const EdgeInsets.only(top: 30, bottom: 30, left: 20, right: 20),
+            padding: const EdgeInsets.only(top: 30, bottom: 30, left: 20, right: 20),
             decoration: BoxDecoration(
               color: bgWhite,
               borderRadius: BorderRadius.circular(10),
@@ -91,11 +89,7 @@ class _InformationScreenState extends State<InformationScreen> {
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
-                                SizedBox(
-                                    width: 40,
-                                    height: 40,
-                                    child: Image.asset(
-                                        "assets/images/icon/note.png")),
+                                SizedBox(width: 40, height: 40, child: Image.asset("assets/images/icon/note.png")),
                               ],
                             ),
                           ),
@@ -126,11 +120,7 @@ class _InformationScreenState extends State<InformationScreen> {
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
-                                SizedBox(
-                                    width: 40,
-                                    height: 40,
-                                    child: Image.asset(
-                                        "assets/images/icon/soldier.png")),
+                                SizedBox(width: 40, height: 40, child: Image.asset("assets/images/icon/soldier.png")),
                               ],
                             ),
                           ),
@@ -169,10 +159,7 @@ class _InformationScreenState extends State<InformationScreen> {
                               alignment: Alignment.center,
                               children: [
                                 SizedBox(
-                                    width: 40,
-                                    height: 40,
-                                    child: Image.asset(
-                                        "assets/images/icon/armored-van.png")),
+                                    width: 40, height: 40, child: Image.asset("assets/images/icon/armored-van.png")),
                               ],
                             ),
                           ),
@@ -206,8 +193,7 @@ class _InformationScreenState extends State<InformationScreen> {
                                 SizedBox(
                                     width: 40,
                                     height: 40,
-                                    child: Image.asset(
-                                        "assets/images/icon/armored-vehicle.png")),
+                                    child: Image.asset("assets/images/icon/armored-vehicle.png")),
                               ],
                             ),
                           ),
@@ -245,11 +231,7 @@ class _InformationScreenState extends State<InformationScreen> {
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
-                                SizedBox(
-                                    width: 40,
-                                    height: 40,
-                                    child: Image.asset(
-                                        "assets/images/icon/barracks.png")),
+                                SizedBox(width: 40, height: 40, child: Image.asset("assets/images/icon/barracks.png")),
                               ],
                             ),
                           ),
@@ -280,11 +262,7 @@ class _InformationScreenState extends State<InformationScreen> {
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
-                                SizedBox(
-                                    width: 40,
-                                    height: 40,
-                                    child: Image.asset("assets/images/icon/backpack.png")
-                                ),
+                                SizedBox(width: 40, height: 40, child: Image.asset("assets/images/icon/backpack.png")),
                               ],
                             ),
                           ),
@@ -307,41 +285,71 @@ class _InformationScreenState extends State<InformationScreen> {
                   children: [
                     Expanded(
                         child: GestureDetector(
-                          onTap: (() async {
-                            if(!await launchUrl(Uri.parse("https://docs.google.com/spreadsheets/d/1mDJK9RF2mgrq2mC8qk4Qs6MEQ9WaPyODtfrhZGFMcEs/edit?usp=sharing"))){
-                              throw Exception('Gagal membuka tautan');
-                            }
-                          }),
-                          child: Column(
-                            children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: bgLightTransparent,
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    SizedBox(
-                                        width: 40,
-                                        height: 40,
-                                        child: Image.asset("assets/images/icon/form-survei.png")
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              const Text(
-                                "Layanan Publik",
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ],
+                      onTap: (() async {
+                        if (!await launchUrl(Uri.parse(
+                            "https://docs.google.com/spreadsheets/d/1mDJK9RF2mgrq2mC8qk4Qs6MEQ9WaPyODtfrhZGFMcEs/edit?usp=sharing"))) {
+                          throw Exception('Gagal membuka tautan');
+                        }
+                      }),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: bgLightTransparent,
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SizedBox(
+                                    width: 40, height: 40, child: Image.asset("assets/images/icon/form-survei.png")),
+                              ],
+                            ),
                           ),
-                        )
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          const Text(
+                            "Layanan Publik",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    )),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: (() async {
+                          navigation("/report_suggestion");
+                        }),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: bgLightTransparent,
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  SizedBox(
+                                      width: 40, height: 40, child: Image.asset("assets/images/icon/letterbox.png")),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            const Text(
+                              "Saran & Masukan",
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),

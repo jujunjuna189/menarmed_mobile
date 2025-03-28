@@ -23,6 +23,7 @@ import 'package:menarmed_mobile/screens/report/report_armory_screen.dart';
 import 'package:menarmed_mobile/screens/report/report_logistics.dart';
 import 'package:menarmed_mobile/screens/report/report_permission_screen.dart';
 import 'package:menarmed_mobile/screens/report/report_presence_screen.dart';
+import 'package:menarmed_mobile/screens/report/report_suggestion_screen.dart';
 import 'package:menarmed_mobile/screens/report/report_vehicle_permission_screen.dart';
 import 'package:menarmed_mobile/screens/report/report_vehicle_van_permission_screen.dart';
 import 'package:menarmed_mobile/screens/scan_qr/scan_screen.dart';
@@ -148,6 +149,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ReportArmoryScreen());
       case '/report_logistics':
         return MaterialPageRoute(builder: (_) => const ReportLogisticsScreen());
+      case '/report_suggestion':
+        return MaterialPageRoute(builder: (_) => const ReportSuggestionScreen());
       default:
         // If there is no such named route in the switch statement, e.g. /third
         return _errorRoute();
