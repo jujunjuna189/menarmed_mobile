@@ -133,3 +133,9 @@ Jalankan migrasi backend saat memasang perubahan ini di server lain:
 ```bash
 php artisan migrate
 ```
+
+## Suara Sirene pada Android Release
+
+Resource `android/app/src/main/res/raw/alarm.mp3` digunakan untuk suara push, sedangkan `assets/audio/alarm.mp3` digunakan pemutar audio Flutter. `res/raw/keep.xml` menjaga suara push dan ikon notifikasi agar tidak dihapus oleh resource shrinking pada build release.
+
+Setelah menginstal APK terbaru, buka aplikasi sekali untuk membuat channel notifikasi dan subscribe topic. Pastikan channel Alarm Stelling memiliki suara aktif dan volume notifikasi tidak nol. Pengaturan channel yang sudah dibuat dapat diubah melalui pengaturan Android. Suara push bukan sirene berulang ketika aplikasi tertutup.
