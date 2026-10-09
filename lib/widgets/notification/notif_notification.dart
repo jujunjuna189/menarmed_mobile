@@ -1,70 +1,51 @@
 import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:menarmed_mobile/repository/notification_repo.dart';
-import 'package:menarmed_mobile/service/local_notification_service.dart';
-import 'package:menarmed_mobile/widgets/popup/popup_notification.dart';
 
 class NotifNotification extends StatefulWidget {
-  const NotifNotification({Key? key}) : super(key: key);
-
+  const NotifNotification({super.key});
   @override
   State<NotifNotification> createState() => _NotifNotificationState();
 }
 
 class _NotifNotificationState extends State<NotifNotification> {
-  bool _notifActive = false;
-  
+  int _unread = 0;
+  Timer? _timer;
   @override
-  void initState(){
-    realtimeNotification();
+  void initState() {
     super.initState();
-  }
-  
-  void realtimeNotification(){
-    Timer.periodic(const Duration(seconds: 1), (_) async {
-      await NotificationRepo.instance.getNotif(orderBy: "desc").then((value) {
-        int index = value.indexWhere((element) => element["read"] == false);
-        if(index != -1 && _notifActive == false){
-          _notifActive = true;
-          showLocalPusNotification(value[index]);
-          setState((){});
-        }
-        if(index == -1 && _notifActive == true){
-          _notifActive = false;
-          setState((){});
-        }
-      });
-    });
+    _refresh();
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) => _refresh());
   }
 
-  void showLocalPusNotification(Map<String, dynamic> value) async {
-    await LocalNotificationService.instance.showNotification(id: 0, title: "Alarm Stelling", body: value["title"]);
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
-  void showNotification(){
-    NotificationRepo.instance.getNotif(orderBy: "desc").then((value){
-      PopupNotification.instance.showPopup(context, data: json.encode(value));
-    });
+  Future<void> _refresh() async {
+    final items = await NotificationRepo.instance.getNotif();
+    if (!mounted) return;
+    final count = items.where((item) => item['read'] != true).length;
+    if (count != _unread) setState(() => _unread = count);
+  }
+
+  Future<void> _open() async {
+    await Navigator.of(context).pushNamed('/notifications');
+    if (mounted) await _refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: ((){
-        showNotification();
-      }),
-      child: Stack(
-        children: [
-          const Icon(Icons.notifications_none_outlined),
-          _notifActive ?
-          const Positioned(
-            top: 0,
-            right: 0,
-            child: Icon(Icons.circle, size: 10, color: Colors.red,)
-          ) : Container(),
-        ],
+    return IconButton(
+      tooltip: _unread == 0 ? 'Notifikasi' : '$_unread notifikasi belum dibaca',
+      onPressed: _open,
+      icon: Badge(
+        isLabelVisible: _unread > 0,
+        backgroundColor: const Color(0xFFB24343),
+        label: Text(_unread > 99 ? '99+' : '$_unread'),
+        child: const Icon(Icons.notifications_none_outlined),
       ),
     );
   }

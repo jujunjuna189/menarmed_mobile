@@ -2,21 +2,24 @@ import 'dart:convert';
 
 import 'package:menarmed_mobile/repository/auth_repo.dart';
 
-class NotificationRepo{
+class NotificationRepo {
   NotificationRepo._privateConstructor();
-  static final NotificationRepo instance = NotificationRepo._privateConstructor();
+  static final NotificationRepo instance =
+      NotificationRepo._privateConstructor();
 
   Future<List> getNotif({int id = 0, String orderBy = "asc"}) async {
     List notification = [];
-    await AuthRepo.instance.getSession("notification").then((value){
-      if(value != null){
+    await AuthRepo.instance.getSession("notification").then((value) {
+      if (value != null) {
         notification = json.decode(value["notif"]);
         //Get by id
-        if(id != 0){
-          notification = notification.where((element) => element["id"] == id).toList();
+        if (id != 0) {
+          notification = notification
+              .where((element) => element["id"] == id)
+              .toList();
         }
 
-        if(orderBy == "desc"){
+        if (orderBy == "desc") {
           notification.sort((a, b) => -a["id"].compareTo(b["id"]));
         }
       }
@@ -25,22 +28,29 @@ class NotificationRepo{
     return notification;
   }
 
-  Future setNotif({String title = "", String subTitle = "", String content = "", String code = ""}) async {
+  Future setNotif({
+    String title = "",
+    String subTitle = "",
+    String content = "",
+    String code = "",
+  }) async {
     await AuthRepo.instance.getSession("notification").then((value) {
-      List<Map<String, dynamic>> dataBatch = [{
-        "id": value == null ? 1 : generateId(value),
-        "title": title,
-        "sub_title": subTitle,
-        "content": content,
-        "code": code,
-        "read": false,
-      }];
+      List<Map<String, dynamic>> dataBatch = [
+        {
+          "id": value == null ? 1 : generateId(value),
+          "title": title,
+          "sub_title": subTitle,
+          "content": content,
+          "code": code,
+          "read": false,
+        },
+      ];
 
       String bundle = json.encode(dataBatch);
 
-      if(value != null){
+      if (value != null) {
         updateNotification(json.encode(value), bundle);
-      }else{
+      } else {
         createNotification(bundle);
       }
     });
@@ -51,10 +61,8 @@ class NotificationRepo{
     return notification.length + 1;
   }
 
-  void createNotification(String value) async {
-    await AuthRepo.instance.setSession("notification", {
-      "notif": value,
-    });
+  Future<void> createNotification(String value) async {
+    await AuthRepo.instance.setSession("notification", {"notif": value});
   }
 
   void updateNotification(String oldData, String newData) {
@@ -69,10 +77,10 @@ class NotificationRepo{
   Future notificationRead(int id) async {
     List notification = await getNotif();
     int index = notification.indexWhere((element) => element["id"] == id);
+    if (index == -1) return;
     notification[index]["read"] = true;
     //Add notif update
     String bundle = json.encode(notification);
-    createNotification(bundle);
+    await createNotification(bundle);
   }
-
 }

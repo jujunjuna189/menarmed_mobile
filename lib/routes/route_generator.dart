@@ -1,3 +1,4 @@
+import 'package:menarmed_mobile/screens/notification/notification_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:menarmed_mobile/screens/ability/ability_data_screen.dart';
 import 'package:menarmed_mobile/screens/alarm/alarm_board_screen.dart';
@@ -43,6 +44,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case '/register':
         return MaterialPageRoute(builder: (_) => const RegisterScreen());
+      case '/notifications':
+        return MaterialPageRoute(builder: (_) => const NotificationScreen());
       case '/profile':
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case '/update_profile':
@@ -59,7 +62,7 @@ class RouteGenerator {
       case '/home':
         return MaterialPageRoute(
             builder: (_) => const HomeScreen(
-                  title: "Home",
+                  title: "Beranda",
                 ));
       case '/scan_qr':
         return MaterialPageRoute(builder: (_) => const ScanScreen());

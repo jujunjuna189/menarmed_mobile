@@ -41,11 +41,24 @@ class PermissionRepo {
         var jsonResponse = jsonDecode(response.body);
         Iterable iterable = jsonResponse['data'];
         //Set session permission with today
-        AuthRepo.instance.setSession("permission", iterable.first);
+        await AuthRepo.instance.setSession(
+          "permission",
+          Map<String, dynamic>.from(iterable.first),
+        );
         //return data response
         ToastLoader.instance.hideLoader();
         ToastAlert.instance.showMessage(success: true);
         return iterable.first;
+      }
+      if (response.statusCode == 409 || response.statusCode == 422) {
+        ToastLoader.instance.hideLoader();
+        ToastAlert.instance.showMessage(
+          customMessage: true,
+          customMessageText:
+              jsonDecode(response.body)['message']?.toString() ??
+              'Aktivitas tidak dapat diproses',
+        );
+        return false;
       }
     } catch (e) {
       ToastLoader.instance.hideLoader();

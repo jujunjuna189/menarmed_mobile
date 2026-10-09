@@ -45,3 +45,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local environment and signing credentials
+.env
+.env_dev
+.env_staging
+/android/key.properties
+/android/upload-keystore.jks

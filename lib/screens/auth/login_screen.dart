@@ -4,10 +4,11 @@ import 'package:menarmed_mobile/utils/colors.dart';
 import 'package:menarmed_mobile/widgets/button/button_submit.dart';
 import 'package:menarmed_mobile/widgets/text_field/field_password.dart';
 import 'package:menarmed_mobile/widgets/text_field/field_text.dart';
+import 'package:menarmed_mobile/widgets/toast/toast_alert.dart';
 import 'package:menarmed_mobile/widgets/toast/toast_loader.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -16,25 +17,44 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isSubmitting = false;
 
   void onLogin() async {
+    if (_isSubmitting) return;
+    if (_emailController.text.trim().isEmpty || _passwordController.text.isEmpty) {
+      ToastAlert.instance.showMessage(
+        customMessage: true,
+        customMessageText: "NRP dan password harus diisi",
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
     ToastLoader.instance.showLoader();
     Map<String, dynamic> dataBatch = {
-      'email': _emailController.text,
+      'email': _emailController.text.trim(),
       'password': _passwordController.text
     };
 
-    await AuthRepo.instance.login(dataBatch).then((value) {
-      if(value){
-        clearForm();
-        Navigator.of(context).pushNamedAndRemoveUntil("/home", (Route<dynamic> route) => false);
-      }
-    });
+    final success = await AuthRepo.instance.login(dataBatch);
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+    if (success) {
+      clearForm();
+      Navigator.of(context).pushNamedAndRemoveUntil("/home", (Route<dynamic> route) => false);
+    }
   }
 
   void clearForm(){
     _emailController.text = "";
     _passwordController.text = "";
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -67,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   FieldPassword(controller: _passwordController, placeHolder: "Masukan Password...",),
                   const SizedBox(height: 50,),
                   ButtonSubmit(onPressed: ((){
-                    onLogin();
+                    if (!_isSubmitting) onLogin();
                   }),text: "Login"),
                   const SizedBox(height: 20,),
                   GestureDetector(

@@ -8,14 +8,18 @@ import 'package:menarmed_mobile/widgets/toast/toast_loader.dart';
 
 class VehiclePermissionRepo {
   VehiclePermissionRepo._privateConstructor();
-  static final VehiclePermissionRepo instance = VehiclePermissionRepo._privateConstructor();
+  static final VehiclePermissionRepo instance =
+      VehiclePermissionRepo._privateConstructor();
 
   final _perizinanKendaraanStore = Api.perizinanKendaraanStore;
   final _reportPerizinanKendaraan = Api.reportPerizinanKendaraan;
 
   Future report(Map<String, dynamic> body) async {
     try {
-      final response = await http.post(Uri.parse(_reportPerizinanKendaraan), body: body);
+      final response = await http.post(
+        Uri.parse(_reportPerizinanKendaraan),
+        body: body,
+      );
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
@@ -35,17 +39,33 @@ class VehiclePermissionRepo {
 
   Future store(Map<String, dynamic> body) async {
     try {
-      final response = await http.post(Uri.parse(_perizinanKendaraanStore), body: body);
+      final response = await http.post(
+        Uri.parse(_perizinanKendaraanStore),
+        body: body,
+      );
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
         Iterable iterable = jsonResponse['data'];
         //Set session permission with today
-        AuthRepo.instance.setSession("vehicle_permission", iterable.first);
+        await AuthRepo.instance.setSession(
+          "vehicle_permission",
+          Map<String, dynamic>.from(iterable.first),
+        );
         //return data response
         ToastLoader.instance.hideLoader();
         ToastAlert.instance.showMessage(success: true);
         return iterable.first;
+      }
+      if (response.statusCode == 409 || response.statusCode == 422) {
+        ToastLoader.instance.hideLoader();
+        ToastAlert.instance.showMessage(
+          customMessage: true,
+          customMessageText:
+              jsonDecode(response.body)['message']?.toString() ??
+              'Aktivitas tidak dapat diproses',
+        );
+        return false;
       }
     } catch (e) {
       ToastLoader.instance.hideLoader();

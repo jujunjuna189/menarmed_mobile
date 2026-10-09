@@ -7,15 +7,21 @@ class PopupPermission {
   PopupPermission._privateConstructor();
   static final PopupPermission instance = PopupPermission._privateConstructor();
 
-  void showPopup(BuildContext context, {String data = "", Function? callback}) {
+  void showPopup(
+    BuildContext context, {
+    String data = "",
+    bool vehicle = false,
+    Function? callback,
+  }) {
     TextEditingController destinationController = TextEditingController();
     TextEditingController typeVihicleController = TextEditingController();
     showDialog(
-        barrierDismissible: false,
-        context: context,
-        builder: (context) {
-          // for detect position object
-          return StatefulBuilder(builder: (context, setState){
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        // for detect position object
+        return StatefulBuilder(
+          builder: (context, setState) {
             return Stack(
               children: [
                 Positioned(
@@ -25,7 +31,10 @@ class PopupPermission {
                   child: Material(
                     color: Colors.transparent,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 20,
+                        horizontal: 15,
+                      ),
                       decoration: BoxDecoration(
                         color: bgWhite,
                         borderRadius: BorderRadius.circular(20),
@@ -34,34 +43,57 @@ class PopupPermission {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Tujuan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
-                          const SizedBox(height: 10,),
-                          FieldText(controller: destinationController, placeHolder: "..."),
-                          const SizedBox(height: 10,),
-                          const Text("Jenis Kendaraan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
-                          const SizedBox(height: 10,),
-                          FieldText(controller: typeVihicleController, placeHolder: "..."),
-                          const SizedBox(height: 50,),
+                          const Text(
+                            "Tujuan",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          FieldText(
+                            controller: destinationController,
+                            placeHolder: "...",
+                          ),
+                          const SizedBox(height: 10),
+                          if (vehicle) ...[
+                            const Text(
+                              "Jenis Kendaraan",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            FieldText(
+                              controller: typeVihicleController,
+                              placeHolder: "...",
+                            ),
+                          ],
+                          const SizedBox(height: 50),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 50),
-                            child: ButtonSubmit(text: "Simpan", onPressed: ((){
-                              callback!({
-                                'destination': destinationController.text,
-                                'type_vihicle': typeVihicleController.text
-                              });
-                              Navigator.of(context).pop();
-                            }),),
+                            child: ButtonSubmit(
+                              text: "Simpan",
+                              onPressed: (() {
+                                callback!({
+                                  'destination': destinationController.text,
+                                  'type_vihicle': typeVihicleController.text,
+                                });
+                                Navigator.of(context).pop();
+                              }),
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                )
+                ),
               ],
             );
-          });
-        }
+          },
+        );
+      },
     );
   }
-
 }

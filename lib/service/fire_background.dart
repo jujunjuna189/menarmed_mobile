@@ -1,48 +1,63 @@
-import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:menarmed_mobile/model/alarm_description_model.dart';
 import 'package:menarmed_mobile/repository/firebase/fire_alarm_repo.dart';
 import 'package:menarmed_mobile/repository/notification_repo.dart';
 import 'package:menarmed_mobile/widgets/toast/toast_alert.dart';
 
-class FireBackground{
+class FireBackground {
   FireBackground._privateContructor();
   static final FireBackground instance = FireBackground._privateContructor();
-  AssetsAudioPlayer assetsAudioPlayer = AssetsAudioPlayer();
+  final AudioPlayer audioPlayer = AudioPlayer();
   bool isPlaying = false;
+  bool _alarmActive = false;
 
   void initialized() {
     alarmStelling();
   }
 
   void alarmStelling() async {
-    FireAlarmRepo.instance.onChange(callback: ((value){
-      if(value["status"] != null && value["status"]){
-        if(!isPlaying){
-          initializedAudio(assetsAudioPlayer);
+    FireAlarmRepo.instance.onChange(
+      callback: ((value) {
+        final active = value is Map && value['status'] == true;
+        final siren = active && value['siren'] != false;
+        if (siren && !isPlaying) {
+          initializedAudio(audioPlayer);
           isPlaying = true;
-          //Set Notif
-          NotificationRepo.instance.setNotif(title: AlarmDescriptionModel.instance.alarmDescription[value["code"]]["title"], subTitle: AlarmDescriptionModel.instance.alarmDescription[value["code"]]["sub_title"], content: AlarmDescriptionModel.instance.alarmDescription[value["code"]]["description"], code: "0-alarm");
-        }
-      }else{
-        if(isPlaying){
-          stopAudio(assetsAudioPlayer);
+        } else if (!siren && isPlaying) {
+          stopAudio(audioPlayer);
           isPlaying = false;
         }
-      }
-    }));
-  }
-
-  void initializedAudio(AssetsAudioPlayer assetsAudioPlayer) async {
-    assetsAudioPlayer.open(
-      Audio("assets/audio/alarm.mp3"),
-      showNotification: true,
-      loopMode: LoopMode.playlist,
+        if (active && !_alarmActive) {
+          final code = int.tryParse(value['code'].toString());
+          final alarms = AlarmDescriptionModel.instance.alarmDescription;
+          if (code != null && code >= 0 && code < alarms.length) {
+            NotificationRepo.instance.setNotif(
+              title: alarms[code]['title'],
+              subTitle: alarms[code]['sub_title'],
+              content: alarms[code]['description'],
+              code: '0-alarm',
+            );
+          }
+        }
+        _alarmActive = active;
+      }),
     );
-    ToastAlert.instance.showMessage(customMessage: true, customMessageText: "Alarm dibunyikan");
   }
 
-  void stopAudio(AssetsAudioPlayer assetsAudioPlayer) async {
-    await assetsAudioPlayer.stop();
-    ToastAlert.instance.showMessage(customMessage: true, customMessageText: "Alarm diberhentikan");
+  void initializedAudio(AudioPlayer audioPlayer) async {
+    await audioPlayer.setReleaseMode(ReleaseMode.loop);
+    await audioPlayer.play(AssetSource("audio/alarm.mp3"));
+    ToastAlert.instance.showMessage(
+      customMessage: true,
+      customMessageText: "Alarm dibunyikan",
+    );
+  }
+
+  void stopAudio(AudioPlayer audioPlayer) async {
+    await audioPlayer.stop();
+    ToastAlert.instance.showMessage(
+      customMessage: true,
+      customMessageText: "Alarm diberhentikan",
+    );
   }
 }

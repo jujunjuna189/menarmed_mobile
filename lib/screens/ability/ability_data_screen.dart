@@ -1,148 +1,128 @@
 import 'dart:convert';
-
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:menarmed_mobile/repository/users_repo.dart';
-import 'package:menarmed_mobile/utils/colors.dart';
-import 'package:menarmed_mobile/widgets/shimmer/shimmer_widget.dart';
-import 'package:menarmed_mobile/widgets/text_field/field_search.dart';
+import 'package:menarmed_mobile/utils/api.dart';
+import 'package:menarmed_mobile/widgets/paginated_report_list.dart';
 
 class AbilityDataScreen extends StatefulWidget {
-  const AbilityDataScreen({Key? key}) : super(key: key);
-
+  const AbilityDataScreen({super.key});
   @override
   State<AbilityDataScreen> createState() => _AbilityDataScreenState();
 }
 
 class _AbilityDataScreenState extends State<AbilityDataScreen> {
-  List _userList = [];
-  List _personnelList = [];
-
+  String _search = '';
+  String _sort = 'latest';
+  Timer? _debounce;
   @override
-  void initState(){
-    super.initState();
-    getPersonnel();
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
   }
 
-  void getPersonnel() async {
-    await UsersRepo.instance.show({
-      "role": jsonEncode([3])
-    }).then((value){
-      _userList = value;
-      setPersonnel();
+  void onSearch(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) setState(() => _search = value.trim());
     });
-    setState((){});
-  }
-
-  void setPersonnel() {
-    _personnelList = _userList;
-  }
-
-  void onSearch(String searchValue) {
-    _personnelList = _userList.where((value) => value['name']!.toLowerCase().contains(searchValue.toLowerCase())).toList();
-    setState((){});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        elevation: 0.0,
-        title: const Text("Data Kemampuan"),
-      ),
-      body: Column(
-        children: [
-          FieldSearch(onChange: ((value){
-            onSearch(value);
-          }),),
-          const SizedBox(height: 20,),
-          Expanded(
-            child: _personnelList.isEmpty ? buildPersonnelListShimmer() : buildPersonnelList(),
+        title: const Text('Data Kemampuan'),
+        actions: [
+          PopupMenuButton<String>(
+            tooltip: 'Urutkan personil',
+            icon: const Icon(Icons.sort),
+            initialValue: _sort,
+            onSelected: (value) => setState(() => _sort = value),
+            itemBuilder: (context) => [
+              CheckedPopupMenuItem(
+                value: 'latest',
+                checked: _sort == 'latest',
+                child: const Text('Terbaru'),
+              ),
+              CheckedPopupMenuItem(
+                value: 'name_asc',
+                checked: _sort == 'name_asc',
+                child: const Text('Nama A–Z'),
+              ),
+              CheckedPopupMenuItem(
+                value: 'name_desc',
+                checked: _sort == 'name_desc',
+                child: const Text('Nama Z–A'),
+              ),
+            ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget buildPersonnelListShimmer() {
-    return ListView.builder(
-      physics: const BouncingScrollPhysics(),
-      itemCount: 8,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      itemBuilder: (context, index){
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 5),
-          child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-              decoration: BoxDecoration(
-                color: bgWhite,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ShimmerWidget.circular(height: 16, width: double.infinity, shapeBorder: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)
-                  )),
-                  const SizedBox(height: 3,),
-                  ShimmerWidget.circular(height: 16, width: 150, shapeBorder: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)
-                  )),
-                ],
-              )
-          ),
-        );
-      },
-    );
-  }
-
-  Widget buildPersonnelList() {
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      children: _personnelList.isNotEmpty ? _personnelList.map((value) {
-        return ClipRRect(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 5),
-            child: GestureDetector(
-              onTap: ((){
-                Navigator.of(context).pushNamed("/ability", arguments: jsonEncode({"user_id": value['id']}));
-              }),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                decoration: BoxDecoration(
-                  color: bgWhite,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(value['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold),),
-                          const SizedBox(height: 3,),
-                          Text(value['pangkat'] ?? '...'),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios, size: 15,),
-                  ],
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            child: TextField(
+              onChanged: onSearch,
+              decoration: const InputDecoration(
+                hintText: 'Cari personil',
+                prefixIcon: Icon(Icons.search),
+                isDense: true,
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
           ),
-        );
-      }).toList() : [
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-          decoration: BoxDecoration(
-            color: bgWhite,
-            borderRadius: BorderRadius.circular(10),
+          Expanded(
+            child: PaginatedReportList(
+              key: ValueKey((_search, _sort)),
+              url: Api.penggunaShow,
+              filters: {
+                'role': jsonEncode([3]),
+                'search': _search,
+                'sort': _sort,
+              },
+              groupByMonth: false,
+              itemBuilder: (context, value) => Column(
+                children: [
+                  ListTile(
+                    tileColor: Colors.white,
+                    leading: const CircleAvatar(
+                      backgroundColor: Color(0xFFF0F1F2),
+                      child: Icon(
+                        Icons.person_outline,
+                        color: Color(0xFF383A3E),
+                      ),
+                    ),
+                    title: Text(
+                      value['name']?.toString() ?? '-',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(value['pangkat']?.toString() ?? '-'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).pushNamed(
+                      '/ability',
+                      arguments: jsonEncode({
+                        'user_id': value['id'],
+                        'name': value['name'],
+                        'pangkat': value['pangkat'],
+                      }),
+                    ),
+                  ),
+                  const Divider(height: 1, indent: 56),
+                ],
+              ),
+            ),
           ),
-          child: const Text("Tidak ada data", style: TextStyle(fontWeight: FontWeight.bold),),
-        )
-      ],
+        ],
+      ),
     );
   }
 }

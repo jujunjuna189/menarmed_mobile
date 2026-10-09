@@ -11,11 +11,14 @@ class ArmoryRepo {
   static final ArmoryRepo instance = ArmoryRepo._privateConstructor();
 
   final _gudangSenjataStore = Api.gudangSenjataStore;
-  final _reportGudangSenjata= Api.reportGudangSenjata;
+  final _reportGudangSenjata = Api.reportGudangSenjata;
 
   Future report(Map<String, dynamic> body) async {
     try {
-      final response = await http.post(Uri.parse(_reportGudangSenjata), body: body);
+      final response = await http.post(
+        Uri.parse(_reportGudangSenjata),
+        body: body,
+      );
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
@@ -35,17 +38,33 @@ class ArmoryRepo {
 
   Future store(Map<String, dynamic> body) async {
     try {
-      final response = await http.post(Uri.parse(_gudangSenjataStore), body: body);
+      final response = await http.post(
+        Uri.parse(_gudangSenjataStore),
+        body: body,
+      );
 
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
         Iterable iterable = jsonResponse['data'];
         //Set session permission with today
-        AuthRepo.instance.setSession("armory", iterable.first);
+        await AuthRepo.instance.setSession(
+          "armory",
+          Map<String, dynamic>.from(iterable.first),
+        );
         //return data response
         ToastLoader.instance.hideLoader();
         ToastAlert.instance.showMessage(success: true);
         return iterable.first;
+      }
+      if (response.statusCode == 409 || response.statusCode == 422) {
+        ToastLoader.instance.hideLoader();
+        ToastAlert.instance.showMessage(
+          customMessage: true,
+          customMessageText:
+              jsonDecode(response.body)['message']?.toString() ??
+              'Aktivitas tidak dapat diproses',
+        );
+        return false;
       }
     } catch (e) {
       ToastLoader.instance.hideLoader();

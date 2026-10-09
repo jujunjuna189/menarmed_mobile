@@ -1,6 +1,8 @@
+import 'package:menarmed_mobile/service/push_token_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:menarmed_mobile/utils/api.dart';
 import 'package:http/http.dart' as http;
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:menarmed_mobile/widgets/toast/toast_alert.dart';
@@ -13,37 +15,59 @@ class AuthRepo{
   final _uriLogin = Api.login;
   final _uriRegister = Api.register;
 
-  Future login(Map<String, dynamic> body) async {
+  Future<bool> login(Map<String, dynamic> body) async {
     try {
-      final response = await http.post(Uri.parse(_uriLogin), body: body);
+      final response = await http.post(
+        Uri.parse(_uriLogin),
+        headers: const {'Accept': 'application/json'},
+        body: body,
+      ).timeout(const Duration(seconds: 15));
+      final jsonResponse = jsonDecode(response.body) as Map<String, dynamic>;
 
       if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(response.body);
-        Iterable iterable = jsonResponse['data'];
-        //Set session
-        setSession("user", iterable.first);
+        final data = jsonResponse['data'] as List<dynamic>;
+        await setSession("user", Map<String, dynamic>.from(data.first as Map));
+        await setStringSession("auth_token", jsonResponse['token'].toString());
+        PushTokenService.instance.signedIn();
         ToastLoader.instance.hideLoader();
-        ToastAlert.instance.showMessage(customMessage: true, customMessageText: "Berhasil Masuk");
+        ToastAlert.instance.showMessage(
+          customMessage: true,
+          customMessageText: jsonResponse['message']?.toString() ?? "Berhasil masuk",
+        );
         return true;
       }
-    } catch (e) {
+
+      ToastLoader.instance.hideLoader();
+      ToastAlert.instance.showMessage(
+        customMessage: true,
+        customMessageText: jsonResponse['message']?.toString() ?? "NRP atau password tidak sesuai",
+      );
+      return false;
+    } on TimeoutException {
+      ToastLoader.instance.hideLoader();
+      ToastAlert.instance.showMessage(
+        customMessage: true,
+        customMessageText: "Koneksi ke server habis waktu",
+      );
+      return false;
+    } catch (_) {
       ToastLoader.instance.hideLoader();
       ToastAlert.instance.showMessage(serverError: true);
+      return false;
     }
-    ToastLoader.instance.hideLoader();
-    ToastAlert.instance.showMessage(customMessage: true, customMessageText: "Gagal Masuk, Periksa data kembali");
-    return false;
   }
 
   Future register(Map<String, dynamic> body) async {
     try {
       final response = await http.post(Uri.parse(_uriRegister), body: body);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         var jsonResponse = jsonDecode(response.body);
         Iterable iterable = jsonResponse['data'];
         //Set session
-        setSession("user", iterable.first);
+        await setSession("user", Map<String, dynamic>.from(iterable.first));
+        await setStringSession("auth_token", jsonResponse['token'].toString());
+        PushTokenService.instance.signedIn();
         ToastLoader.instance.hideLoader();
         ToastAlert.instance.showMessage(customMessage: true, customMessageText: "Berhasil daftar akun");
         return true;
@@ -59,7 +83,12 @@ class AuthRepo{
 
   Future logout() async {
     final preference = await SharedPreferences.getInstance();
-    preference.clear();
+    await PushTokenService.instance.unregister();
+    final installation = preference.getString('push_installation_id');
+    await preference.clear();
+    if (installation != null) {
+      await preference.setString('push_installation_id', installation);
+    }
     // preference.remove("user");
     ToastLoader.instance.hideLoader();
     ToastAlert.instance.showMessage(customMessage: true, customMessageText: "Berhasil keluar aplikasi");
@@ -71,7 +100,12 @@ class AuthRepo{
     if (preference.containsKey(key)) {
       preference.remove(key);
     }
-    preference.setString(key, jsonEncode(value));
+    await preference.setString(key, jsonEncode(value));
+  }
+
+  Future<void> setStringSession(String key, String value) async {
+    final preference = await SharedPreferences.getInstance();
+    await preference.setString(key, value);
   }
 
   Future getSession(String key) async {

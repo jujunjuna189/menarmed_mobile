@@ -5,10 +5,7 @@ import 'package:menarmed_mobile/widgets/toast/toast_loader.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class ELearningViewScreen extends StatefulWidget {
-  const ELearningViewScreen({
-    Key? key,
-    required this.data,
-  }) : super(key: key);
+  const ELearningViewScreen({Key? key, required this.data}) : super(key: key);
 
   final String data;
 
@@ -17,14 +14,24 @@ class ELearningViewScreen extends StatefulWidget {
 }
 
 class _ELearningViewScreenState extends State<ELearningViewScreen> {
-
   String _apiELearningView = '';
+  late final WebViewController _controller;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     ToastLoader.instance.showLoader();
     setUrlELearninge();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (finished) {
+            ToastLoader.instance.hideLoader();
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(_apiELearningView));
   }
 
   void setUrlELearninge() {
@@ -33,12 +40,6 @@ class _ELearningViewScreenState extends State<ELearningViewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WebView(
-      initialUrl: _apiELearningView,
-      javascriptMode: JavascriptMode.unrestricted,
-      onPageFinished: ((finished){
-        ToastLoader.instance.hideLoader();
-      }),
-    );
+    return WebViewWidget(controller: _controller);
   }
 }

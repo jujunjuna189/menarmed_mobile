@@ -1,230 +1,191 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:menarmed_mobile/repository/armed_repo.dart';
-import 'package:menarmed_mobile/repository/kostrad_repo.dart';
-import 'package:menarmed_mobile/utils/colors.dart';
-import 'package:menarmed_mobile/widgets/shimmer/shimmer_widget.dart';
-import 'package:menarmed_mobile/widgets/text_field/field_search.dart';
+import 'package:menarmed_mobile/utils/api.dart';
+import 'package:menarmed_mobile/widgets/paginated_report_list.dart';
 
 class PositionScreen extends StatefulWidget {
-  const PositionScreen({Key? key}) : super(key: key);
-
+  const PositionScreen({super.key});
   @override
   State<PositionScreen> createState() => _PositionScreenState();
 }
 
 class _PositionScreenState extends State<PositionScreen> {
-  bool _statusLoadPosition = false;
-  List _positionList = [];
-  List _kostradList = [];
-  List _armedList = [];
-  int _navigation = 1; //Navigation kostrad or armed
+  final _search = TextEditingController();
+  int _category = 1;
+  String _query = '';
+  Timer? _debounce;
+
+  void _onSearch(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), () {
+      if (mounted) setState(() => _query = value.trim());
+    });
+  }
 
   @override
-  void initState(){
-    getKostrad();
-    getArmed();
-    super.initState();
+  void dispose() {
+    _debounce?.cancel();
+    _search.dispose();
+    super.dispose();
   }
 
-  void getKostrad() async {
-    await KostradRepo.instance.show({}).then((value){
-      if(value != false) {
-        _kostradList = value;
-      }
-    });
-    setNavigation(1);
-  }
-
-  void getArmed() async {
-    await ArmedRepo.instance.show({}).then((value){
-      _armedList = value;
-    });
-  }
-
-  void onSearch(String searchValue) {
-    if(_navigation == 1){
-      _positionList = _kostradList.where((value) => value['nama']!.toLowerCase().contains(searchValue.toLowerCase()) || value['jabatan']!.toLowerCase().contains(searchValue.toLowerCase())).toList();
-    }else if(_navigation == 2){
-      _positionList = _armedList.where((value) => value['nama']!.toLowerCase().contains(searchValue.toLowerCase()) || value['jabatan']!.toLowerCase().contains(searchValue.toLowerCase())).toList();
-    }
-    setState((){});
-  }
-
-  void setNavigation(int navigation){
-    _navigation = navigation;
-    if(navigation == 1){
-      _positionList = _kostradList;
-    }else if(navigation == 2){
-      _positionList = _armedList;
-    }else{
-      _positionList = [];
-    }
-    _statusLoadPosition = true;
-    setState((){});
-  }
+  Widget _categoryTab(String label, String asset) => Tab(
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset('assets/images/position/$asset', width: 22, height: 22),
+        const SizedBox(width: 8),
+        Flexible(child: Text(label)),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FieldSearch(onChange: ((value){
-          onSearch(value);
-        }),),
-        const SizedBox(height: 25,),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return DefaultTabController(
+      length: 2,
+      child: ColoredBox(
+        color: const Color(0xFFF4F5F6),
+        child: Column(
           children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: ((){
-                  setNavigation(1);
-                }),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: _navigation == 1 ? bgWhite : bgLightPrimary,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 5,
-                        blurRadius: 7,
-                        offset: const Offset(0, 3), // changes position of shadow
-                      ),
-                    ],
+            Material(
+              color: Colors.white,
+              child: TabBar(
+                onTap: (index) => setState(() => _category = index + 1),
+                indicatorWeight: 3,
+                indicatorColor: const Color(0xFF252525),
+                labelColor: const Color(0xFF252525),
+                unselectedLabelColor: const Color(0xFF73777D),
+                labelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                dividerColor: const Color(0xFFE2E4E7),
+                tabs: [
+                  _categoryTab('Kostrad', 'kostrad50.png'),
+                  _categoryTab('Armed', 'armed50.png'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: TextField(
+                controller: _search,
+                onChanged: _onSearch,
+                style: const TextStyle(fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Cari nama atau jabatan',
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintStyle: const TextStyle(color: Color(0xFF8A8F95)),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Image.asset("assets/images/position/kostrad50.png"),
-                      const Text("Kostrad", style: TextStyle(fontWeight: FontWeight.bold),),
-                    ],
+                  prefixIcon: const Icon(Icons.search, size: 18),
+                  prefixIconConstraints: const BoxConstraints(
+                    minWidth: 34,
+                    minHeight: 34,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFE2E4E7)),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFE2E4E7)),
                   ),
                 ),
               ),
             ),
+            const SizedBox(height: 10),
             Expanded(
-              child: GestureDetector(
-                onTap: ((){
-                  setNavigation(2);
-                }),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: _navigation == 2 ? bgWhite : bgLightPrimary,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 5,
-                        blurRadius: 7,
-                        offset: const Offset(0, 3), // changes position of shadow
+              child: PaginatedReportList(
+                key: ValueKey('$_category:$_query'),
+                url: _category == 1 ? Api.kostradShow : Api.armedShow,
+                groupByMonth: false,
+                filters: {if (_query.isNotEmpty) 'search': _query},
+                itemBuilder: (context, item) => Material(
+                  color: Colors.white,
+                  child: InkWell(
+                    onTap: () => Navigator.of(context).pushNamed(
+                      '/detail_kostrad',
+                      arguments: jsonEncode({
+                        ...item,
+                        'title': _category == 1
+                            ? 'Pejabat Kostrad'
+                            : 'Pejabat Armed',
+                      }),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Image.asset("assets/images/position/armed50.png"),
-                      const Text("Armed", style: TextStyle(fontWeight: FontWeight.bold),),
-                    ],
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: Color(0xFFE2E4E7)),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F2F3),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.person_outline,
+                              size: 21,
+                              color: Color(0xFF555A60),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item['jabatan']?.toString() ?? '-',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF73777D),
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  item['nama']?.toString() ?? '-',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF24272B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.chevron_right,
+                            size: 18,
+                            color: Color(0xFF8A8F95),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 15,),
-        Expanded(
-          child: !_statusLoadPosition ? buildPositionListShimmer() : buildPositionList(),
-        ),
-      ],
-    );
-  }
-
-  Widget buildPositionListShimmer() {
-    return ListView.builder(
-      physics: const BouncingScrollPhysics(),
-      itemCount: 8,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      itemBuilder: (context, index){
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 5),
-          child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-              decoration: BoxDecoration(
-                color: bgWhite,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ShimmerWidget.circular(height: 16, width: double.infinity, shapeBorder: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)
-                  )),
-                  const SizedBox(height: 3,),
-                  ShimmerWidget.circular(height: 16, width: 150, shapeBorder: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)
-                  )),
-                ],
-              )
-          ),
-        );
-      },
-    );
-  }
-
-  Widget buildPositionList() {
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      children: _positionList.isNotEmpty ? _positionList.map((value) {
-        return ClipRRect(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 5),
-            child: GestureDetector(
-              onTap: ((){
-                Navigator.of(context).pushNamed("/detail_kostrad", arguments: jsonEncode({...value, "title": _navigation == 1 ? "Penjabat Kostrad" : "Pejabat Armed"}));
-              }),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                decoration: BoxDecoration(
-                  color: bgWhite,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(value['jabatan'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold),),
-                          const SizedBox(height: 3,),
-                          Text(value['nama'] ?? ''),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios, size: 15,),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      }).toList() : [
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-          decoration: BoxDecoration(
-            color: bgWhite,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Text("Tidak ada data", style: TextStyle(fontWeight: FontWeight.bold),),
-        )
-      ],
+      ),
     );
   }
 }

@@ -16,6 +16,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   String _textMarquee = "Selamat Datang Di Aplikasi Menarmed";
   List _dashboardSlider = [];
+  int _sliderIndex = 0;
 
   @override
   void initState() {
@@ -26,18 +27,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void getFirstData() async {
     await getTextMarque();
     await getSlider();
-    setState(() {});
+    if (!mounted) return;
+    for (final slide in _dashboardSlider) {
+      precacheImage(NetworkImage(slide['path']), context, onError: (error, stack) {});
+    }
+    if (mounted) setState(() {});
   }
 
   Future getTextMarque() async {
     await FeatureRepo.instance.dashboardTextMarquee({}).then((value) {
-      _textMarquee = value[0]['text'];
+      if (value is List && value.isNotEmpty) {
+        _textMarquee = value.first['text']?.toString() ?? _textMarquee;
+      }
     });
   }
 
   Future getSlider() async {
     await FeatureRepo.instance.dashboardSlider({}).then((value) {
-      _dashboardSlider = value;
+      _dashboardSlider = value is Iterable ? value.toList() : [];
     });
   }
 
@@ -72,30 +79,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         _dashboardSlider.isNotEmpty
-            ? CarouselSlider(
+            ? Column(children: [
+              CarouselSlider(
                 items: _dashboardSlider.map((value) {
                   return Builder(builder: (BuildContext context) {
-                    return ClipRRect(
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
+                          const ColoredBox(color: Color(0xFFD5D5D5)),
                           Image.network(
                             value['path'],
                             fit: BoxFit.cover,
+                            gaplessPlayback: true,
+                            loadingBuilder: (context, child, progress) => progress == null
+                                ? child
+                                : const ColoredBox(color: Color(0xFFD5D5D5), child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
+                            errorBuilder: (context, error, stack) => const ColoredBox(
+                              color: Color(0xFFD5D5D5),
+                              child: Center(child: Icon(Icons.broken_image_outlined, size: 28, color: Color(0xFF73777D))),
+                            ),
                           ),
                         ],
+                      ),
                       ),
                     );
                   });
                 }).toList(),
                 options: CarouselOptions(
-                  height: 200,
-                  enlargeCenterPage: true,
-                  enableInfiniteScroll: true,
-                  autoPlay: true,
+                  aspectRatio: 16 / 9,
+                  viewportFraction: 0.94,
+                  enlargeCenterPage: false,
+                  enableInfiniteScroll: _dashboardSlider.length > 1,
+                  autoPlay: _dashboardSlider.length > 1,
+                  autoPlayInterval: const Duration(seconds: 5),
+                  onPageChanged: (index, reason) => setState(() => _sliderIndex = index),
                 ),
-              )
+              ),
+              if (_dashboardSlider.length > 1)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, bottom: 4),
+                  child: Wrap(
+                    spacing: 4,
+                    children: List.generate(_dashboardSlider.length, (index) => Container(
+                      width: 6, height: 6,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: index == _sliderIndex ? const Color(0xFF252525) : const Color(0xFFBFC3C7),
+                      ),
+                    )),
+                  ),
+                ),
+            ])
             : Container(),
         const SizedBox(
           height: 5,
@@ -468,9 +506,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   const SizedBox(
                                     height: 5,
                                   ),
-                                  const Text(
-                                    "Saran & Masukan",
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  const FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      "Saran & Masukan",
+                                      maxLines: 1,
+                                      softWrap: false,
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                    ),
                                   ),
                                   const Text(
                                     "Kirim Saran dan Masukan",

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 import 'package:menarmed_mobile/utils/colors.dart';
 
 class ScanScreen extends StatefulWidget {
@@ -30,15 +30,15 @@ class _ScanScreenState extends State<ScanScreen> {
     qrController?.dispose();
     super.dispose();
   }
-  
+
   void resumeCameraOnLoad() {
     Timer(const Duration(seconds: 1), () async {
       await qrController?.resumeCamera().then((value) => _statusCamera = true);
-      setState((){});
+      setState(() {});
     });
   }
 
-  void qrCodeScan(QRViewController qrController){
+  void qrCodeScan(QRViewController qrController) {
     this.qrController = qrController;
     qrController.scannedDataStream.listen((qrcode) {
       _result = qrcode;
@@ -50,40 +50,41 @@ class _ScanScreenState extends State<ScanScreen> {
 
   void onFlashCamera() async {
     await qrController?.toggleFlash();
-    if(_statusFlashCamera){
+    if (_statusFlashCamera) {
       _statusFlashCamera = false;
-    }else{
+    } else {
       _statusFlashCamera = true;
     }
 
-    setState((){});
+    setState(() {});
   }
 
   void onFlipCamera() async {
     await qrController?.flipCamera();
-    if(_statusFlipCamera){
+    if (_statusFlipCamera) {
       _statusFlipCamera = false;
-    }else{
+    } else {
       _statusFlipCamera = true;
     }
 
-    setState((){});
+    setState(() {});
   }
 
   void onResumePauseCamera() async {
-    if(_statusCamera){
+    if (_statusCamera) {
       await qrController?.pauseCamera().then((value) => _statusCamera = false);
-    }else{
+    } else {
       await qrController?.resumeCamera().then((value) => _statusCamera = true);
     }
 
-    setState((){});
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    var scanArea = (MediaQuery.of(context).size.width < 400 ||
-        MediaQuery.of(context).size.height < 400)
+    var scanArea =
+        (MediaQuery.of(context).size.width < 400 ||
+            MediaQuery.of(context).size.height < 400)
         ? 250.0
         : 300.0;
     return Stack(
@@ -95,11 +96,12 @@ class _ScanScreenState extends State<ScanScreen> {
             key: _globalKey,
             onQRViewCreated: qrCodeScan,
             overlay: QrScannerOverlayShape(
-                borderColor: bgDanger,
-                borderRadius: 10,
-                borderLength: 30,
-                borderWidth: 10,
-                cutOutSize: scanArea),
+              borderColor: bgDanger,
+              borderRadius: 10,
+              borderLength: 30,
+              borderWidth: 10,
+              cutOutSize: scanArea,
+            ),
             onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
           ),
         ),
@@ -117,16 +119,20 @@ class _ScanScreenState extends State<ScanScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 GestureDetector(
-                  onTap: ((){
+                  onTap: (() {
                     onFlashCamera();
                   }),
-                  child: _statusFlashCamera ? const Icon(Icons.flash_off) : const Icon(Icons.flash_on)
+                  child: _statusFlashCamera
+                      ? const Icon(Icons.flash_off)
+                      : const Icon(Icons.flash_on),
                 ),
                 GestureDetector(
-                  onTap: ((){
+                  onTap: (() {
                     onFlipCamera();
                   }),
-                  child: _statusFlipCamera ? const Icon(Icons.flip_camera_android, color: textDanger,) : const Icon(Icons.flip_camera_android)
+                  child: _statusFlipCamera
+                      ? const Icon(Icons.flip_camera_android, color: textDanger)
+                      : const Icon(Icons.flip_camera_android),
                 ),
               ],
             ),
@@ -134,28 +140,27 @@ class _ScanScreenState extends State<ScanScreen> {
         ),
         Align(
           alignment: Alignment.bottomCenter,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 30),
-                decoration: BoxDecoration(
-                  color: bgLightTransparent,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    GestureDetector(
-                      onTap: ((){
-                        onResumePauseCamera();
-                      }),
-                      child: _statusCamera ? const Icon(Icons.pause_circle_outline, size: 50,) : const Icon(Icons.play_circle_outline_rounded, size: 50,)
-                    ),
-                  ],
+          child: SafeArea(
+            top: false,
+            minimum: const EdgeInsets.only(bottom: 64),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Material(
+                color: bgLightTransparent,
+                shape: const CircleBorder(),
+                child: IconButton(
+                  tooltip: _statusCamera ? 'Jeda kamera' : 'Lanjutkan kamera',
+                  onPressed: onResumePauseCamera,
+                  padding: const EdgeInsets.all(12),
+                  iconSize: 32,
+                  icon: Icon(
+                    _statusCamera
+                        ? Icons.pause_circle_outline
+                        : Icons.play_circle_outline_rounded,
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ],
@@ -164,9 +169,9 @@ class _ScanScreenState extends State<ScanScreen> {
 
   void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
     if (!p) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('no Permission')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('no Permission')));
     }
   }
 }

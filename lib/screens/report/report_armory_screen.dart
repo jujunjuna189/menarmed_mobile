@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:menarmed_mobile/repository/armory_repo.dart';
-import 'package:menarmed_mobile/utils/colors.dart';
+import 'package:menarmed_mobile/utils/api.dart';
+import 'package:menarmed_mobile/widgets/report_browser.dart';
+import 'package:menarmed_mobile/widgets/report_entry.dart';
 
 class ReportArmoryScreen extends StatefulWidget {
   const ReportArmoryScreen({Key? key}) : super(key: key);
@@ -10,21 +11,6 @@ class ReportArmoryScreen extends StatefulWidget {
 }
 
 class _ReportArmoryScreenState extends State<ReportArmoryScreen> {
-  List _reportList = [];
-
-  @override
-  void initState(){
-    getReport();
-    super.initState();
-  }
-
-  void getReport() async {
-    await ArmoryRepo.instance.report({}).then((value){
-      _reportList = value;
-    });
-    setState((){});
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,61 +22,10 @@ class _ReportArmoryScreenState extends State<ReportArmoryScreen> {
     );
   }
 
-  Widget buildReportList(){
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      children: _reportList.map((value){
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(width: 1, color: bgLightPrimary))
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(value['user_name'] ?? '', style: const TextStyle(fontSize: 16,fontWeight: FontWeight.bold),),
-                  Text(value['created_at'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              const SizedBox(height: 10,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Waktu Pengembalian"),
-                  Text(value['masuk'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              const SizedBox(height: 5,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Batrai Pengembalian"),
-                  Text(value['batrai_masuk'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              const SizedBox(height: 5,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Waktu Pengambilan"),
-                  Text(value['keluar'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              const SizedBox(height: 5,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Batrai Pengambilan"),
-                  Text(value['batrai_keluar'] ?? '-', style: const TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ],
-          ),
-        );
-      }).toList(),
+  Widget buildReportList() {
+    return ReportBrowser(
+      url: Api.reportGudangSenjata,
+      itemBuilder: (context, value) => ReportEntry(data: value, armory: true),
     );
   }
 }

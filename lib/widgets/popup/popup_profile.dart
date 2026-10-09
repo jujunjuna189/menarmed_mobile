@@ -1,90 +1,95 @@
 import 'package:flutter/material.dart';
 import 'package:menarmed_mobile/repository/auth_repo.dart';
-import 'package:menarmed_mobile/utils/colors.dart';
 
 class PopupProfile {
   PopupProfile._privateConstructor();
-  static final PopupProfile instance = PopupProfile._privateConstructor();
+  static final instance = PopupProfile._privateConstructor();
 
-  void showPopup(BuildContext context, {String data = "", Function? callback}) {
-    showDialog(
-        barrierColor: Colors.transparent,
-        barrierDismissible: true,
-        context: context,
-        builder: (context) {
-          // for detect position object
-          return StatefulBuilder(builder: (context, setState){
-            return Stack(
-              alignment: Alignment.topRight,
+  Future<void> showPopup(
+    BuildContext context, {
+    String data = '',
+    Function? callback,
+  }) async {
+    final session = await AuthRepo.instance.getSession('user');
+    if (!context.mounted) return;
+    final name = session?['name']?.toString().trim() ?? '';
+    final nrp = session?['email']?.toString() ?? '';
+    final size = MediaQuery.sizeOf(context);
+    final top = MediaQuery.paddingOf(context).top + kToolbarHeight;
+    final action = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(size.width - 260, top, 12, 0),
+      constraints: const BoxConstraints(minWidth: 240, maxWidth: 260),
+      color: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      elevation: 6,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6),
+        side: const BorderSide(color: Color(0xFFE5E5E5)),
+      ),
+      items: [
+        PopupMenuItem<String>(
+          enabled: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Positioned(
-                  right: 15,
-                  top: MediaQuery.of(context).size.height / 13,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      width: 200,
-                      decoration: BoxDecoration(
-                        color: bgWhite,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: bgLightPrimary, width: 1),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 15),
-                            child: Text("Setting", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
-                          ),
-                          const SizedBox(height: 15,),
-                          GestureDetector(
-                            onTap: ((){
-                              Navigator.of(context).pushNamed("/profile");
-                            }),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-                              child: Row(
-                                children: const [
-                                  Icon(Icons.person),
-                                  SizedBox(width: 10,),
-                                  Text("Profile", style: TextStyle(fontSize: 16),),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const Divider(
-                            height: 20,
-                            thickness: 0.5,
-                            endIndent: 0,
-                            color: Colors.black,
-                          ),
-                          GestureDetector(
-                            onTap: ((){
-                              AuthRepo.instance.logout();
-                              Navigator.of(context).pushNamedAndRemoveUntil("/login", (Route<dynamic> route) => false);
-                            }),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-                              child: Row(
-                                children: const [
-                                  Icon(Icons.logout),
-                                  SizedBox(width: 10,),
-                                  Text("Logout", style: TextStyle(fontSize: 16),),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                Text(
+                  name.isEmpty ? 'Akun saya' : name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF171717),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (nrp.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'NRP $nrp',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF73777D),
                     ),
                   ),
-                )
+                ],
               ],
-            );
-          });
-        }
+            ),
+          ),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(
+          value: 'profile',
+          child: Row(
+            children: [
+              Icon(Icons.person_outline, size: 20),
+              SizedBox(width: 12),
+              Text('Profil saya'),
+            ],
+          ),
+        ),
+        const PopupMenuItem(
+          value: 'logout',
+          child: Row(
+            children: [
+              Icon(Icons.logout, size: 20, color: Color(0xFFB24343)),
+              SizedBox(width: 12),
+              Text('Keluar', style: TextStyle(color: Color(0xFFB24343))),
+            ],
+          ),
+        ),
+      ],
     );
+    if (!context.mounted) return;
+    if (action == 'profile') {
+      await Navigator.of(context).pushNamed('/profile');
+    } else if (action == 'logout') {
+      await AuthRepo.instance.logout();
+      if (!context.mounted) return;
+      Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
+    }
+    callback?.call();
   }
-
 }

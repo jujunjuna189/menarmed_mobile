@@ -2,6 +2,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:menarmed_mobile/repository/auth_repo.dart';
 import 'package:menarmed_mobile/utils/colors.dart';
 import 'package:menarmed_mobile/widgets/toast/toast_alert.dart';
@@ -40,9 +42,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
-  void logout(){
-    AuthRepo.instance.logout();
+  void logout() async {
+    await AuthRepo.instance.logout();
+    if (!mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil("/login", (Route<dynamic> route) => false);
+  }
+
+  Future<void> copyPushToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token == null) throw Exception('Token unavailable');
+      await Clipboard.setData(ClipboardData(text: token));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Token FCM disalin')));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Token FCM belum tersedia')));
+    }
   }
 
   @override
@@ -51,6 +67,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         elevation: 0.0,
         title: const Text("PROFILE"),
+        actions: [
+          IconButton(tooltip: 'Salin token FCM untuk uji push',
+            icon: const Icon(Icons.notifications_outlined), onPressed: copyPushToken),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),

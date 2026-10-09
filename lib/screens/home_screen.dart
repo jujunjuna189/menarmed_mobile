@@ -20,7 +20,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   Map<String, dynamic> _user = {};
   String _titleScreen = '';
   int _currenTab = 0;
@@ -29,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Map<String, dynamic>> _tabModel = [
     {
-      'tab_name': 'Home',
+      'tab_name': 'Beranda',
       'tab_icon': Icons.home,
       'tab_screen': const DashboardScreen(),
     },
@@ -55,15 +54,14 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
-  void tabNavigator(tab)
-  {
+  void tabNavigator(tab) {
     _currenTab = tab;
     _titleScreen = _tabModel[tab]['tab_name'];
     _currentScreen = _tabModel[tab]['tab_screen'];
   }
 
   @override
-  void initState(){
+  void initState() {
     _titleScreen = widget.title;
     getUser();
     super.initState();
@@ -71,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void getUser() async {
     await AuthRepo.instance.getSession("user").then((value) {
-      setState((){
+      setState(() {
         _user = value;
       });
     });
@@ -90,9 +88,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               children: [
                 const NotifNotification(),
-                const SizedBox(width: 20,),
+                const SizedBox(width: 20),
                 GestureDetector(
-                  onTap: ((){
+                  onTap: (() {
                     PopupProfile.instance.showPopup(context);
                   }),
                   child: Container(
@@ -105,7 +103,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Text(_user['name'] != null ? _user['name'].substring(0, 2) : "Nama".substring(0, 2), style: const TextStyle(color: textDark, fontSize: 13, fontWeight: FontWeight.bold),),
+                        Text(
+                          _user['name'] != null
+                              ? _user['name'].substring(0, 2)
+                              : "Nama".substring(0, 2),
+                          style: const TextStyle(
+                            color: textDark,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -118,10 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           const BackgroundScafold(),
-          PageStorage(
-            bucket: _bucket,
-            child: _currentScreen,
-          ),
+          PageStorage(bucket: _bucket, child: _currentScreen),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -130,27 +134,46 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: _tabModel.asMap().entries.map((val) {
-              return MaterialButton(
-                minWidth: 40,
-                onPressed: ((){
-                  setState((){
-                    tabNavigator(val.key);
-                  });
-                }),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Icon(
-                      val.value['tab_icon'],
-                      size: 23,
-                      color: _currenTab == val.key ? textLight : textSoftLight,
-                    ),
-                    const SizedBox(height: 2,),
-                    Text(val.value['tab_name'], style: TextStyle(color: _currenTab == val.key ? textLight : textSoftLight, fontSize: 10),),
-                  ],
+              return Expanded(
+                child: MaterialButton(
+                  minWidth: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  onPressed: (() {
+                    setState(() {
+                      tabNavigator(val.key);
+                    });
+                  }),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(
+                        val.value['tab_icon'],
+                        size: 23,
+                        color: _currenTab == val.key
+                            ? textLight
+                            : textSoftLight,
+                      ),
+                      const SizedBox(height: 2),
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            val.value['tab_name'],
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: _currenTab == val.key
+                                  ? textLight
+                                  : textSoftLight,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
-            }).toList()
+            }).toList(),
           ),
         ),
       ),

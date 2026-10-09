@@ -11,22 +11,27 @@ class AbilityRepo {
 
   final _kemampuanShow = Api.kemampuanShow;
 
-  Future show(Map<String, dynamic> body) async {
+  Future show(Map<String, dynamic> body, {http.Client? client}) async {
     try {
-      final response = await http.post(Uri.parse(_kemampuanShow), body: body);
+      final post = client?.post ?? http.post;
+      final response = await post(
+        Uri.parse(_kemampuanShow),
+        body: body,
+      ).timeout(const Duration(seconds: 20));
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 300) {
         var jsonResponse = jsonDecode(response.body);
-        Iterable iterable = jsonResponse['data'];
+        final List iterable = jsonResponse['data'] as List;
+        if (iterable.isEmpty) return <String, dynamic>{};
         //return data response
-        return iterable.first;
+        if (response.statusCode == 200) return iterable.first;
       }
     } catch (e) {
       ToastLoader.instance.hideLoader();
       ToastAlert.instance.showMessage(serverError: true);
     }
     ToastLoader.instance.hideLoader();
-    ToastAlert.instance.showMessage(empty: true);
+    ToastAlert.instance.showMessage(failed: true);
     return false;
   }
 }

@@ -1,111 +1,132 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:menarmed_mobile/utils/colors.dart';
 
-class DetailPositionScreen extends StatefulWidget {
-  const DetailPositionScreen({Key? key, required this.data}) : super(key: key);
-
+class DetailPositionScreen extends StatelessWidget {
+  const DetailPositionScreen({super.key, required this.data});
   final String data;
 
-  @override
-  State<DetailPositionScreen> createState() => _DetailPositionScreenState();
-}
-
-class _DetailPositionScreenState extends State<DetailPositionScreen> {
-  Map<String, dynamic> _argument = {};
-
-  @override
-  void initState(){
-    _argument = jsonDecode(widget.data) as Map<String, dynamic>;
-    super.initState();
+  String _value(Map<String, dynamic> person, String key) {
+    final value = person[key]?.toString().trim() ?? '';
+    return value.isEmpty ? '-' : value;
   }
+
+  Widget _detail(IconData icon, String label, String value) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      border: Border(bottom: BorderSide(color: Color(0xFFE2E4E7))),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: const Color(0xFF73777D)),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 11, color: Color(0xFF73777D)),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF24272B),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
+    final person = jsonDecode(data) as Map<String, dynamic>;
+    final title = person['title']?.toString() ?? 'Detail Pejabat';
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F5F6),
       appBar: AppBar(
-        elevation: 0.0,
-        title: Text(_argument['title'] ?? ""),
+        elevation: 0,
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
-        child: Column(
-          children: [
-            Row(
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 24),
+        children: [
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: bgLightPrimary,
-                    borderRadius: BorderRadius.circular(50),
+                    color: const Color(0xFFF1F2F3),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Text(_argument['nama'].toString().substring(0, 2), style: const TextStyle(fontWeight: FontWeight.bold),),
-                    ],
+                  child: const Icon(
+                    Icons.person_outline,
+                    size: 28,
+                    color: Color(0xFF555A60),
                   ),
                 ),
-                const SizedBox(width: 15,),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("Nama"),
-                      Text(_argument['nama'],style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                      Text(
+                        _value(person, 'nama'),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF24272B),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _value(person, 'jabatan'),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: Color(0xFF73777D),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 25,),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-              decoration: const BoxDecoration(
-                color: bgWhite,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Pangkat"),
-                  Text(_argument['pangkat'], style: const TextStyle(fontWeight: FontWeight.bold),),
-                ],
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 18, 16, 8),
+            child: Text(
+              'Identitas personel',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF73777D),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-              decoration: const BoxDecoration(
-                color: bgWhite,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("NRP"),
-                  Text(_argument['nrp'], style: const TextStyle(fontWeight: FontWeight.bold),),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-              decoration: const BoxDecoration(
-                color: bgWhite,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Jabatan"),
-                  Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 40),
-                        child: Text(_argument['jabatan'], style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.end,),
-                      )
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+          _detail(
+            Icons.military_tech_outlined,
+            'Pangkat',
+            _value(person, 'pangkat'),
+          ),
+          _detail(Icons.badge_outlined, 'NRP', _value(person, 'nrp')),
+          _detail(Icons.work_outline, 'Jabatan', _value(person, 'jabatan')),
+        ],
       ),
     );
   }

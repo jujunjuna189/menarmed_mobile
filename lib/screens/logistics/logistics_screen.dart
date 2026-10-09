@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:menarmed_mobile/utils/api.dart';
+import 'package:menarmed_mobile/widgets/activity_history.dart';
+import 'package:menarmed_mobile/repository/movement_status_repo.dart';
 import 'package:menarmed_mobile/repository/auth_repo.dart';
 import 'package:menarmed_mobile/repository/logistics_repo.dart';
-import 'package:menarmed_mobile/utils/colors.dart';
+import 'package:menarmed_mobile/widgets/activity_panel.dart';
 import 'package:menarmed_mobile/widgets/toast/toast_alert.dart';
 import 'package:menarmed_mobile/widgets/toast/toast_loader.dart';
 
@@ -16,7 +18,7 @@ class LogisticsScreen extends StatefulWidget {
 }
 
 class _LogisticsScreenState extends State<LogisticsScreen> {
-
+  int _historyVersion = 0;
   Map<String, dynamic> _user = {};
   final String _codeAccess = "03";
   Map<String, dynamic> _logistics = {};
@@ -24,79 +26,94 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
   bool _statusLogisticsInToday = false;
 
   @override
-  void initState(){
+  void initState() {
     getUser();
-    getLogisticsToday();
     super.initState();
-  }
-
-  String dateNowFormatter (String date, String format){
-    final DateTime dateNow = DateTime.parse(date);
-    final DateFormat formatter = DateFormat(format);
-    String formatDateNow = formatter.format(dateNow);
-    return formatDateNow;
   }
 
   void getUser() async {
     await AuthRepo.instance.getSession("user").then((value) {
-      setState((){
-        _user = value;
+      if (!mounted) return;
+      setState(() {
+        _user = value is Map ? Map<String, dynamic>.from(value) : {};
       });
+      getLogisticsToday();
     });
   }
 
-  void getLogisticsToday() async {
-    String formatDateNow = dateNowFormatter(DateTime.now().toString(), "yyyy-MM-dd");
-    await AuthRepo.instance.getSession("logistics").then((value){
-      if(value != null){
-        String formatDatePermission = dateNowFormatter(value['created_at'], "yyyy-MM-dd");
-        if(formatDatePermission == formatDateNow){
-          if(value['keluar'] != null){
-            _statusLogisticsOutToday = true;
-          }else{
-            _statusLogisticsOutToday = false;
-          }
-          if(value['masuk'] != null){
-            _statusLogisticsInToday = true;
-          }else{
-            _statusLogisticsInToday = false;
-          }
-          _logistics = value;
-        }else{
-          _statusLogisticsOutToday = false;
-          _statusLogisticsInToday = false;
-        }
-      }
+  bool _hasRecordedTime(dynamic value) {
+    final time = value?.toString().trim() ?? '';
+    return time.isNotEmpty && time != '-';
+  }
 
-      setState((){});
-    });
+  Future<void> getLogisticsToday() async {
+    if (_user['id'] == null) return;
+    try {
+      final value = await MovementStatusRepo.active(
+        '${Api.server}api/logistik/show',
+        _user['id'].toString(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _logistics = value;
+        _statusLogisticsOutToday = _hasRecordedTime(value['keluar']);
+        _statusLogisticsInToday = _hasRecordedTime(value['masuk']);
+      });
+    } catch (_) {
+      if (mounted)
+        ToastAlert.instance.showMessage(
+          customMessage: true,
+          customMessageText: 'Status aktivitas gagal dimuat',
+        );
+    }
   }
 
   void _take() async {
-    await Navigator.of(context).pushNamed("/scan_qr").then((code){
+    await Navigator.of(context).pushNamed("/scan_qr").then((code) {
+      if (!mounted || code == null) return;
       String json = jsonDecode(code.toString()).toString();
       var splitText = json.split("-");
-      if(_codeAccess == splitText.first){
-        logisticsRequest(userId: _user["id"].toString(), keluar: true, qrcode: json);
-      }else{
-        ToastAlert.instance.showMessage(customMessage: true, customMessageText: "Kode tidak sesuai");
+      if (_codeAccess == splitText.first) {
+        logisticsRequest(
+          userId: _user["id"].toString(),
+          keluar: true,
+          qrcode: json,
+        );
+      } else {
+        ToastAlert.instance.showMessage(
+          customMessage: true,
+          customMessageText: "Kode tidak sesuai",
+        );
       }
     });
   }
 
   void _return() async {
-    await Navigator.of(context).pushNamed("/scan_qr").then((code){
+    await Navigator.of(context).pushNamed("/scan_qr").then((code) {
+      if (!mounted || code == null) return;
       String json = jsonDecode(code.toString()).toString();
       var splitText = json.split("-");
-      if(_codeAccess == splitText.first){
-        logisticsRequest(userId: _user["id"].toString(), masuk: true, qrcode: json);
-      }else{
-        ToastAlert.instance.showMessage(customMessage: true, customMessageText: "Kode tidak sesuai");
+      if (_codeAccess == splitText.first) {
+        logisticsRequest(
+          userId: _user["id"].toString(),
+          masuk: true,
+          qrcode: json,
+        );
+      } else {
+        ToastAlert.instance.showMessage(
+          customMessage: true,
+          customMessageText: "Kode tidak sesuai",
+        );
       }
     });
   }
 
-  void logisticsRequest({String userId = "", bool keluar = false, bool masuk = false, String qrcode = ""}) async {
+  void logisticsRequest({
+    String userId = "",
+    bool keluar = false,
+    bool masuk = false,
+    String qrcode = "",
+  }) async {
     ToastLoader.instance.showLoader();
     Map<String, dynamic> dataBatch = {
       "user_id": userId,
@@ -106,143 +123,66 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
     };
 
     await LogisticsRepo.instance.store(dataBatch).then((value) {
-      getLogisticsToday();
+      if (!mounted || value is! Map) return;
+      setState(() {
+        final active = !_hasRecordedTime(value['masuk']);
+        _logistics = active ? Map<String, dynamic>.from(value) : {};
+        _statusLogisticsOutToday = active && _hasRecordedTime(value['keluar']);
+        _statusLogisticsInToday = false;
+        _historyVersion++;
+      });
     });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0.0,
-        title: const Text("LOGISTIK"),
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      elevation: 0,
+      title: const Text(
+        'Logistik',
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 25,),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-              decoration: BoxDecoration(
-                color: bgWhite,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black54.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 10,
-                    offset: const Offset(0, 0), // changes position of shadow
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Kembalikan Logistik", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
-                      const SizedBox(height: 10,),
-                      _statusLogisticsInToday ? buildSuccessLogistics(text: _logistics['masuk'] != null ? dateNowFormatter(_logistics['masuk'], "HH:mm:ss",) : "") : buildFailedLogistics(),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: ((){
-                      _return();
-                    }),
-                    child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(width: 1, color: bgLightPrimary),
-                        ),
-                        child: const Icon(Icons.qr_code_scanner, color: textDanger, size: 30,)
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 15,),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-              decoration: BoxDecoration(
-                color: bgWhite,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black54.withOpacity(0.1),
-                    spreadRadius: 2,
-                    blurRadius: 10,
-                    offset: const Offset(0, 0), // changes position of shadow
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Ambil Logistik", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
-                      const SizedBox(height: 10,),
-                      _statusLogisticsOutToday ? buildSuccessLogistics(text: _logistics['keluar'] != null ? dateNowFormatter(_logistics['keluar'], "HH:mm:ss",) : "") : buildFailedLogistics(),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: ((){
-                      _take();
-                    }),
-                    child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(width: 1, color: bgLightPrimary),
-                        ),
-                        child: const Icon(Icons.qr_code_scanner, color: textSuccess, size: 30,)
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Success Permission
-  Widget buildSuccessLogistics({String text = ""}){
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    ),
+    body: ListView(
+      padding: const EdgeInsets.only(bottom: 16),
       children: [
-        const Text("Waktu Pengambilan"),
-        const SizedBox(height: 3,),
-        Row(
-          children: [
-            Text(text, style: const TextStyle(fontWeight: FontWeight.bold),),
-            const SizedBox(width: 5,),
-            const Icon(Icons.check_circle, color: textSuccess, size: 11,),
-          ],
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Column(
+            children: [
+              ActivityIdentity(name: _user['name']?.toString() ?? ''),
+              ActivityPanel(
+                title: 'Ambil logistik',
+                done: _statusLogisticsOutToday,
+                statusText: _statusLogisticsOutToday
+                    ? 'Belum dikembalikan'
+                    : 'Siap scan',
+                onScan: _statusLogisticsOutToday ? null : _take,
+                icon: Icons.north_east,
+                time: _logistics['keluar'],
+                details: _statusLogisticsOutToday ? {} : {},
+              ),
+              ActivityPanel(
+                title: 'Kembalikan logistik',
+                done: _statusLogisticsInToday,
+                statusText: _statusLogisticsOutToday
+                    ? 'Menunggu pengembalian'
+                    : 'Belum ada pengambilan',
+                onScan: _statusLogisticsOutToday ? _return : null,
+                icon: Icons.south_west,
+                time: _logistics['masuk'],
+                details: _statusLogisticsInToday ? {} : {},
+              ),
+            ],
+          ),
         ),
+        if (_user['id'] != null)
+          ActivityHistory(
+            key: ValueKey('${_user['id']}-$_historyVersion'),
+            url: Api.reportLogistik,
+            userId: _user['id'].toString(),
+          ),
       ],
-    );
-  }
-
-  // Failed Permission
-  Widget buildFailedLogistics({String text = ""}){
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      decoration: BoxDecoration(
-        color: bgDanger,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: const Text("Belum ada data", style: TextStyle(color: textLight, fontWeight: FontWeight.bold),),
-    );
-  }
+    ),
+  );
 }

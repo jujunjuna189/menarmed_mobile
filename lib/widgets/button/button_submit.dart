@@ -15,8 +15,8 @@ class ButtonSubmit extends StatelessWidget {
         onPressed!();
       }),
       style: ElevatedButton.styleFrom(
-        primary: color ?? bgPrimary,
-        onPrimary: textColor ?? Colors.white,
+        backgroundColor: color ?? bgPrimary,
+        foregroundColor: textColor ?? Colors.white,
         minimumSize: const Size.fromHeight(50),
         elevation: 0,
         padding: const EdgeInsets.symmetric(vertical: 5),
